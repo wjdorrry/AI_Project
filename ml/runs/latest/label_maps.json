@@ -1,0 +1,19 @@
+{
+  "color_labels": [
+    "Black",
+    "White",
+    "Grey",
+    "Beige",
+    "Blue",
+    "Brown",
+    "Green",
+    "Red",
+    "Pink"
+  ],
+  "style_labels": [
+    "Sportswear",
+    "Evening",
+    "Streetwear"
+  ],
+  "vit_id": "google/vit-base-patch16-224"
+}

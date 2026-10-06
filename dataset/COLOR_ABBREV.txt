@@ -1,0 +1,3 @@
+Сокращения для labels_clean.csv (колонка color — только англ. как в обучении):
+кр=Red, з=Green, ч=Black, к=Brown, р=Pink, беж=Beige, б=White
+син=Blue, с=Blue (синий), сер=Grey (серый; «сер» всегда серый)

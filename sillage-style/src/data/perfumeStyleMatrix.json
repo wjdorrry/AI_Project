@@ -1,0 +1,225 @@
+{
+  "meta": {
+    "source": "PerfumeStyleMatrix.xlsx",
+    "description": "Веса соответствия тегов одежды/стиля парфюмерным семействам (-10..10)."
+  },
+  "families": [
+    "Citrus",
+    "Aquatic",
+    "Green",
+    "Fruity",
+    "Woody",
+    "Musk",
+    "Powdery",
+    "Gourmand",
+    "Oriental",
+    "Floral",
+    "Leather"
+  ],
+  "tags": [
+    {
+      "tag": "Black",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": -5,
+        "Aquatic": -6,
+        "Green": -2,
+        "Fruity": -3,
+        "Woody": 8,
+        "Musk": 6,
+        "Powdery": 2,
+        "Gourmand": 4,
+        "Oriental": 10,
+        "Floral": -3,
+        "Leather": 9
+      }
+    },
+    {
+      "tag": "White",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 8,
+        "Aquatic": 9,
+        "Green": 4,
+        "Fruity": 3,
+        "Woody": -2,
+        "Musk": 10,
+        "Powdery": 8,
+        "Gourmand": -4,
+        "Oriental": -6,
+        "Floral": 6,
+        "Leather": -5
+      }
+    },
+    {
+      "tag": "Grey",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 2,
+        "Aquatic": 8,
+        "Green": 3,
+        "Fruity": 1,
+        "Woody": 3,
+        "Musk": 7,
+        "Powdery": 6,
+        "Gourmand": -2,
+        "Oriental": -2,
+        "Floral": 1,
+        "Leather": 2
+      }
+    },
+    {
+      "tag": "Beige",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 3,
+        "Aquatic": 2,
+        "Green": 4,
+        "Fruity": 3,
+        "Woody": 6,
+        "Musk": 8,
+        "Powdery": 7,
+        "Gourmand": 2,
+        "Oriental": 2,
+        "Floral": 4,
+        "Leather": 3
+      }
+    },
+    {
+      "tag": "Blue",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 6,
+        "Aquatic": 10,
+        "Green": 5,
+        "Fruity": 3,
+        "Woody": 2,
+        "Musk": 5,
+        "Powdery": 2,
+        "Gourmand": -3,
+        "Oriental": -4,
+        "Floral": 2,
+        "Leather": -2
+      }
+    },
+    {
+      "tag": "Brown",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": -4,
+        "Aquatic": -3,
+        "Green": 2,
+        "Fruity": -2,
+        "Woody": 10,
+        "Musk": 4,
+        "Powdery": 3,
+        "Gourmand": 6,
+        "Oriental": 7,
+        "Floral": -2,
+        "Leather": 8
+      }
+    },
+    {
+      "tag": "Green",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 7,
+        "Aquatic": 6,
+        "Green": 10,
+        "Fruity": 5,
+        "Woody": 5,
+        "Musk": 3,
+        "Powdery": 1,
+        "Gourmand": -3,
+        "Oriental": -3,
+        "Floral": 4,
+        "Leather": -2
+      }
+    },
+    {
+      "tag": "Red",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": -2,
+        "Aquatic": -5,
+        "Green": -2,
+        "Fruity": 6,
+        "Woody": 4,
+        "Musk": 3,
+        "Powdery": -1,
+        "Gourmand": 7,
+        "Oriental": 10,
+        "Floral": 8,
+        "Leather": 6
+      }
+    },
+    {
+      "tag": "Pink",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 5,
+        "Aquatic": 3,
+        "Green": 2,
+        "Fruity": 8,
+        "Woody": -3,
+        "Musk": 6,
+        "Powdery": 7,
+        "Gourmand": 6,
+        "Oriental": 2,
+        "Floral": 10,
+        "Leather": -3
+      }
+    },
+    {
+      "tag": "Sportswear",
+      "categoryRu": "Стиль",
+      "scores": {
+        "Citrus": 9,
+        "Aquatic": 10,
+        "Green": 7,
+        "Fruity": 6,
+        "Woody": -2,
+        "Musk": 6,
+        "Powdery": 1,
+        "Gourmand": -6,
+        "Oriental": -10,
+        "Floral": 2,
+        "Leather": -8
+      }
+    },
+    {
+      "tag": "Evening",
+      "categoryRu": "Стиль",
+      "scores": {
+        "Citrus": -3,
+        "Aquatic": -5,
+        "Green": -1,
+        "Fruity": 4,
+        "Woody": 6,
+        "Musk": 5,
+        "Powdery": 6,
+        "Gourmand": 8,
+        "Oriental": 10,
+        "Floral": 8,
+        "Leather": 7
+      }
+    },
+    {
+      "tag": "Streetwear",
+      "categoryRu": "Стиль",
+      "scores": {
+        "Citrus": 6,
+        "Aquatic": 5,
+        "Green": 6,
+        "Fruity": 5,
+        "Woody": 4,
+        "Musk": 7,
+        "Powdery": 2,
+        "Gourmand": 3,
+        "Oriental": 1,
+        "Floral": 3,
+        "Leather": 2
+      }
+    }
+  ]
+}

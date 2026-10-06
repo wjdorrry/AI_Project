@@ -1,0 +1,52 @@
+:root {
+  --bg-deep: #12100e;
+  --bg-panel: rgba(28, 24, 20, 0.72);
+  --bg-elevated: rgba(42, 36, 30, 0.55);
+  --stroke: rgba(201, 169, 98, 0.22);
+  --gold: #c9a962;
+  --gold-dim: rgba(201, 169, 98, 0.45);
+  --cream: #f5f0e8;
+  --cream-muted: rgba(245, 240, 232, 0.62);
+  --accent-blush: rgba(180, 120, 110, 0.35);
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-ui: "Manrope", system-ui, sans-serif;
+  --radius: 14px;
+  --radius-sm: 10px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-ui);
+  font-weight: 400;
+  color: var(--cream);
+  background: var(--bg-deep);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(201, 169, 98, 0.12), transparent),
+    radial-gradient(ellipse 60% 50% at 100% 50%, rgba(120, 80, 100, 0.08), transparent),
+    radial-gradient(ellipse 50% 40% at 0% 80%, rgba(80, 100, 90, 0.06), transparent);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}

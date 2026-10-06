@@ -1,0 +1,61 @@
+.pt {
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
+}
+
+.pt-head {
+  margin-bottom: 1.1rem;
+}
+
+.pt-title {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.pt-sub {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--cream-muted);
+  line-height: 1.45;
+}
+
+.pt-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pt-chip {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--cream-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.pt-chip:hover {
+  color: var(--cream);
+  border-color: var(--gold-dim);
+}
+
+.pt-chip--on {
+  color: var(--cream);
+  background: rgba(120, 60, 55, 0.35);
+  border-color: rgba(200, 120, 110, 0.55);
+}
+
+.pt-chip--on:hover {
+  border-color: rgba(220, 140, 130, 0.75);
+}

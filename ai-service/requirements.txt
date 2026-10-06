@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pillow
+python-multipart
+# torchvision нужен цепочке ViT в transformers; transformers 5.x на части установок даёт
+# "Could not import module ViTModel" — держим стабильную ветку 4.x.
+torch>=2.2,<2.7
+torchvision
+transformers>=4.44.0,<5.0
