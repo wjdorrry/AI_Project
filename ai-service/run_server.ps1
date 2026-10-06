@@ -58,4 +58,4 @@ Write-Host "Stop server: Ctrl+C"
 Write-Host ""
 Write-Host "Run frontend in another terminal: cd ..\sillage-style ; npm run dev"
 
-& $Py -m uvicorn app:app --reload --host 127.0.0.1 --port 8000
+& $Py -m uvicorn app:app --host 127.0.0.1 --port 8000
