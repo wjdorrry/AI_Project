@@ -6,6 +6,8 @@ import ImageUploader from "./components/ImageUploader.jsx";
 import TagPicker from "./components/TagPicker.jsx";
 import PreferenceToggle from "./components/PreferenceToggle.jsx";
 import ResultDisplay from "./components/ResultDisplay.jsx";
+import AuthGate from "./components/AuthGate.jsx";
+import { authHeaders } from "./utils/api";
 import "./App.css";
 
 /** В dev — относительный путь (прокси Vite → :8000). В preview/production без VITE_AI_URL — прямой URL. */
@@ -18,7 +20,7 @@ function analyzeEndpoint() {
   return "http://127.0.0.1:8000/analyze";
 }
 
-export default function App() {
+function MainApp() {
   const [files, setFiles] = useState([]);
   const [selectedTags, setSelectedTags] = useState(() => new Set());
   const [excluded, setExcluded] = useState(() => new Set());
@@ -114,6 +116,7 @@ export default function App() {
 
       const res = await fetch(analyzeEndpoint(), {
         method: "POST",
+        headers: authHeaders(),
         body: fd,
       });
       if (!res.ok) throw new Error(`AI service error: ${res.status}`);
@@ -223,8 +226,13 @@ export default function App() {
       </main>
 
       <footer className="app-foot">
-        <span>Учебный проект · демо без бэкенда</span>
+        <span>Учебный проект · персональный кабинет Sillage&amp;Style</span>
       </footer>
     </div>
   );
+}
+
+
+export default function App() {
+  return <AuthGate>{() => <MainApp />}</AuthGate>;
 }
