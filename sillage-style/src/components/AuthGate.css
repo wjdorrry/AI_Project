@@ -1,0 +1,170 @@
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.25rem;
+}
+
+.auth-card {
+  width: min(100%, 440px);
+  padding: 2rem;
+  border: 1px solid var(--stroke);
+  border-radius: 22px;
+  background: rgba(28, 24, 20, 0.9);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(18px);
+}
+
+.auth-card--loading {
+  text-align: center;
+  color: var(--cream-muted);
+}
+
+.auth-brand {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-size: 0.82rem;
+}
+
+.auth-title {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-display);
+  font-size: 2rem;
+}
+
+.auth-sub {
+  margin: 0 0 1.4rem;
+  color: var(--cream-muted);
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  padding: 0.3rem;
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.02);
+}
+
+.auth-tabs button,
+.account-bar button {
+  border: 0;
+  border-radius: 9px;
+  padding: 0.7rem 0.8rem;
+  cursor: pointer;
+  color: var(--cream-muted);
+  background: transparent;
+}
+
+.auth-tabs button.is-active {
+  color: var(--bg-deep);
+  background: linear-gradient(135deg, var(--gold), #b08d45);
+}
+
+.auth-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.auth-form label > span {
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+.auth-form input {
+  width: 100%;
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.035);
+  color: var(--cream);
+  padding: 0.85rem 0.95rem;
+  font: inherit;
+}
+
+.auth-note {
+  margin: -0.3rem 0 0;
+  font-size: 0.76rem;
+  color: var(--cream-muted);
+}
+
+.auth-error {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(200, 120, 110, 0.22);
+  border-radius: 10px;
+  color: rgba(245, 200, 190, 0.95);
+  background: rgba(120, 60, 55, 0.14);
+  font-size: 0.82rem;
+}
+
+.auth-submit {
+  margin-top: 0.2rem;
+  padding: 0.9rem 1rem;
+  border: 0;
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--bg-deep);
+  background: linear-gradient(135deg, var(--gold), #b08d45);
+}
+
+.auth-submit:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.account-bar {
+  max-width: 1120px;
+  margin: 1rem auto 0;
+  padding: 0.8rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  background: rgba(28, 24, 20, 0.72);
+}
+
+.account-bar > div {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.8rem;
+}
+
+.account-label {
+  color: var(--gold);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.account-email {
+  color: var(--cream-muted);
+  font-size: 0.78rem;
+}
+
+.account-bar button {
+  border: 1px solid var(--stroke);
+}
+
+.account-bar button:hover {
+  color: var(--cream);
+  border-color: var(--gold-dim);
+}
