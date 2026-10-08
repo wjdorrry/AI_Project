@@ -8,10 +8,12 @@ from typing import Any
 
 import torch
 import torch.nn as nn
-from fastapi import FastAPI, File, UploadFile
+from fastapi import Depends, FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from transformers import ViTImageProcessor, ViTModel
+
+from auth import get_current_user, init_db, router as auth_router
 
 
 APP_NAME = "Sillage&Style AI"
@@ -139,6 +141,8 @@ class MultiHeadViT(nn.Module):
 
 
 app = FastAPI(title=APP_NAME)
+init_db()
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -198,7 +202,10 @@ def health() -> dict[str, Any]:
 
 
 @app.post("/analyze")
-async def analyze(image: UploadFile = File(...)) -> dict[str, Any]:
+async def analyze(
+    image: UploadFile = File(...),
+    _user: dict[str, Any] = Depends(get_current_user),
+) -> dict[str, Any]:
     _ensure_model()
     raw = await image.read()
     img = Image.open(io.BytesIO(raw)).convert("RGB")
