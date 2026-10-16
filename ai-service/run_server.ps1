@@ -4,7 +4,7 @@ $ErrorActionPreference = "Stop"
 $Root = $PSScriptRoot
 Set-Location -LiteralPath $Root
 
-$VenvDir = Join-Path $Root ".venv_ai"
+$VenvDir = Join-Path $Root ".venv312"
 $Py = Join-Path $VenvDir "Scripts\python.exe"
 $Supported = @("3.12", "3.11", "3.10", "3.13")
 
