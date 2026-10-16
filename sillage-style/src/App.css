@@ -163,3 +163,15 @@
   text-transform: uppercase;
   color: var(--cream-muted);
 }
+
+
+.app-ai-warning {
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: rgba(245, 226, 178, 0.95);
+  background: rgba(201, 169, 98, 0.10);
+  border: 1px solid rgba(201, 169, 98, 0.28);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+}

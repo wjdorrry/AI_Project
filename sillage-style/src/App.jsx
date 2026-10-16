@@ -28,6 +28,8 @@ function MainApp() {
   const [busy, setBusy] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const [aiError, setAiError] = useState("");
+  const [aiWarning, setAiWarning] = useState("");
+  const [aiMode, setAiMode] = useState("");
   const [aiTopColor, setAiTopColor] = useState([]);
   const [aiTopStyle, setAiTopStyle] = useState([]);
   const [aiPicked, setAiPicked] = useState({ color: "", style: "" });
@@ -101,6 +103,8 @@ function MainApp() {
 
   const runAiTagging = async () => {
     setAiError("");
+    setAiWarning("");
+    setAiMode("");
     setAiTopColor([]);
     setAiTopStyle([]);
     setAiPicked({ color: "", style: "" });
@@ -119,8 +123,11 @@ function MainApp() {
         headers: authHeaders(),
         body: fd,
       });
-      if (!res.ok) throw new Error(`AI service error: ${res.status}`);
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.detail || `AI service error: ${res.status}`);
+      }
+      setAiMode(data.model_mode || "");
 
       const allowed = new Set(matrixTags.map((t) => t.tag));
       const scored = (data.tags || []).filter((x) => allowed.has(x.tag));
@@ -136,20 +143,28 @@ function MainApp() {
       const bestStyle = styles[0]?.tag ?? "";
 
       const picked = [bestColor, bestStyle].filter(Boolean);
+      if (picked.length === 0) {
+        throw new Error(data?.note || "Модель не вернула подходящие теги.");
+      }
+
+      const lowConfidence = Boolean(data?.prediction?.low_confidence);
+      if (lowConfidence) {
+        setAiWarning("Уверенность модели низкая. Проверьте выбранные теги вручную и нажмите «Сопоставить аромат».");
+      }
 
       setAiTopColor(colors.slice(0, 3));
       setAiTopStyle(styles.slice(0, 3));
       setAiPicked({ color: bestColor, style: bestStyle });
       setSelectedTags(new Set(picked));
-      // сразу показать семейство и подборку из базы, если ИИ выбрал хотя бы один тег
-      setSubmitted(picked.length > 0);
+      // При высокой уверенности сразу показываем рекомендацию. При низкой — ждём подтверждения пользователя.
+      setSubmitted(picked.length > 0 && !lowConfidence);
     } catch (e) {
       const hint =
         e?.message?.includes("Failed to fetch") || e?.name === "TypeError"
           ? " Браузер не достучался до сервера (часто сервис не запущен или порт не 8000)."
           : "";
       setAiError(
-        `Не удалось распознать теги.${hint} Запустите AI-сервис (порт 8000), например в папке ai-service: powershell -ExecutionPolicy Bypass -File .\\run_server.ps1`
+        `${e?.message || "Не удалось распознать теги."}${hint}`
       );
     } finally {
       setAiBusy(false);
@@ -183,9 +198,10 @@ function MainApp() {
               {aiBusy ? "Распознаём теги…" : "Распознать теги (ИИ)"}
             </button>
             {aiError && <div className="app-ai-err">{aiError}</div>}
+            {aiWarning && <div className="app-ai-warning">{aiWarning}</div>}
             {(aiPicked.color || aiPicked.style) && (
               <div className="app-ai-top">
-                <span className="app-ai-top-label">Выбрано ИИ:</span>
+                <span className="app-ai-top-label">Выбрано ИИ{aiMode ? ` · ${aiMode === "trained_vit" ? "ViT" : "резервная модель"}` : ""}:</span>
                 <span className="app-ai-top-list">{[aiPicked.style, aiPicked.color].filter(Boolean).join(" · ")}</span>
               </div>
             )}
