@@ -9,6 +9,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from PIL import Image
+from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
@@ -185,6 +186,8 @@ def main() -> None:
             pbar.set_postfix(loss=float(loss.item()))
 
         model.eval()
+        color_true, color_pred = [], []
+        style_true, style_pred = [], []
         with torch.no_grad():
             val_loss = 0.0
             for batch in val_loader:
@@ -194,9 +197,22 @@ def main() -> None:
                 out = model(pixel_values=pixel_values)
                 loss = ce(out["logits_color"], y_color) + lam * ce(out["logits_style"], y_style)
                 val_loss += float(loss.item())
+                color_true.extend(y_color.cpu().tolist())
+                color_pred.extend(out["logits_color"].argmax(dim=1).cpu().tolist())
+                style_true.extend(y_style.cpu().tolist())
+                style_pred.extend(out["logits_style"].argmax(dim=1).cpu().tolist())
             val_loss /= max(1, len(val_loader))
 
-        print(f"epoch {epoch}: train_loss={total_loss / max(1, len(train_loader)):.4f} val_loss={val_loss:.4f}")
+        color_acc = accuracy_score(color_true, color_pred)
+        style_acc = accuracy_score(style_true, style_pred)
+        color_f1 = f1_score(color_true, color_pred, average="macro", zero_division=0)
+        style_f1 = f1_score(style_true, style_pred, average="macro", zero_division=0)
+
+        print(
+            f"epoch {epoch}: train_loss={total_loss / max(1, len(train_loader)):.4f} "
+            f"val_loss={val_loss:.4f} color_acc={color_acc:.3f} style_acc={style_acc:.3f} "
+            f"color_f1={color_f1:.3f} style_f1={style_f1:.3f}"
+        )
         if val_loss < best_val:
             best_val = val_loss
             RUN_DIR.mkdir(parents=True, exist_ok=True)
