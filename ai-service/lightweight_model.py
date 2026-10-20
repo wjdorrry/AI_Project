@@ -8,14 +8,26 @@ from typing import Any
 import numpy as np
 from PIL import Image
 from sklearn.linear_model import SGDClassifier
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, mean_absolute_error, mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 
 COLOR_LABELS = ["Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink"]
-STYLE_LABELS = ["Sportswear", "Evening", "Streetwear"]
+STYLE_LABELS = [
+    "Elegant",
+    "Casual",
+    "Romantic",
+    "Minimalist",
+    "Sporty",
+    "Streetwear",
+    "Boho",
+    "Office",
+    "Evening",
+]
+
+STYLE_ALIASES = {"Sportswear": "Sporty"}
 
 
 @dataclass
@@ -27,19 +39,21 @@ class LightweightPrediction:
 
 
 class LightweightImageClassifier:
-    """
-    Резервная обучаемая модель для локального запуска без большого model.pt.
-
-    Она обучается на тех же dataset/images + labels_clean.csv, что и ViT.
-    Это не замена основной ViT-модели, а рабочий fallback, чтобы API не
-    возвращал пустой результат, когда большой checkpoint отсутствует в Git.
-    """
+    """Небольшая резервная модель для локальной проверки AI-сервиса."""
 
     def __init__(self, root: Path):
         self.root = root
         self.dataset_dir = root / "dataset"
-        self.images_dir = self.dataset_dir / "images"
-        self.labels_csv = self.dataset_dir / "labels_clean.csv"
+
+        week3_labels = self.dataset_dir / "week3_labels.csv"
+        week3_images = self.dataset_dir / "week3_images"
+
+        if week3_labels.exists() and week3_images.exists():
+            self.labels_csv = week3_labels
+            self.images_dir = week3_images
+        else:
+            self.labels_csv = self.dataset_dir / "labels_clean.csv"
+            self.images_dir = self.dataset_dir / "images"
 
         self.color_model: Any | None = None
         self.style_model: Any | None = None
@@ -49,52 +63,50 @@ class LightweightImageClassifier:
     @staticmethod
     def _features(img: Image.Image) -> np.ndarray:
         img = img.convert("RGB")
-
-        # Общий вид: маленькая копия кадра.
         small = img.resize((24, 24), Image.Resampling.BILINEAR)
         arr = np.asarray(small, dtype=np.float32) / 255.0
         flat = arr.reshape(-1)
 
-        # Общие цветовые статистики.
         mean = arr.mean(axis=(0, 1))
         std = arr.std(axis=(0, 1))
 
-        # Центр кадра сильнее связан с одеждой, чем края/фон.
         h, w = arr.shape[:2]
         center = arr[h // 4 : 3 * h // 4, w // 4 : 3 * w // 4]
         center_mean = center.mean(axis=(0, 1))
         center_std = center.std(axis=(0, 1))
 
-        # Грубая информация о структуре/контрасте изображения.
         gray = arr.mean(axis=2)
         dx = np.abs(np.diff(gray, axis=1))
         dy = np.abs(np.diff(gray, axis=0))
         texture = np.array(
-            [
-                dx.mean(),
-                dx.std(),
-                dy.mean(),
-                dy.std(),
-            ],
+            [dx.mean(), dx.std(), dy.mean(), dy.std()],
             dtype=np.float32,
         )
 
-        # Гистограммы по RGB.
         hist_parts: list[np.ndarray] = []
         for channel in range(3):
-            hist, _ = np.histogram(arr[:, :, channel], bins=8, range=(0.0, 1.0), density=True)
+            hist, _ = np.histogram(
+                arr[:, :, channel],
+                bins=8,
+                range=(0.0, 1.0),
+                density=True,
+            )
             hist_parts.append(hist.astype(np.float32))
-        hist = np.concatenate(hist_parts)
 
-        return np.concatenate([flat, mean, std, center_mean, center_std, texture, hist]).astype(np.float32)
+        return np.concatenate(
+            [flat, mean, std, center_mean, center_std, texture, *hist_parts]
+        ).astype(np.float32)
 
-    def _load_dataset(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _load_dataset(
+        self,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         if not self.labels_csv.exists():
             raise RuntimeError(f"Не найден файл разметки: {self.labels_csv}")
 
-        xs: list[np.ndarray] = []
-        colors: list[str] = []
-        styles: list[str] = []
+        x_style: list[np.ndarray] = []
+        y_style: list[str] = []
+        x_color: list[np.ndarray] = []
+        y_color: list[str] = []
 
         with self.labels_csv.open("r", encoding="utf-8-sig", newline="") as f:
             reader = csv.DictReader(f)
@@ -102,28 +114,36 @@ class LightweightImageClassifier:
                 file_name = str(row.get("file", "")).strip()
                 color = str(row.get("color", "")).strip()
                 style = str(row.get("style", "")).strip()
+                style = STYLE_ALIASES.get(style, style)
                 path = self.images_dir / file_name
 
-                if not file_name or not path.exists():
-                    continue
-                if color not in COLOR_LABELS or style not in STYLE_LABELS:
+                if not file_name or not path.exists() or style not in STYLE_LABELS:
                     continue
 
                 try:
                     with Image.open(path) as img:
-                        xs.append(self._features(img))
-                    colors.append(color)
-                    styles.append(style)
+                        feat = self._features(img)
                 except OSError:
                     continue
 
-        if len(xs) < 20:
-            raise RuntimeError(
-                "Недостаточно изображений для резервной модели. "
-                "Проверьте dataset/images и dataset/labels_clean.csv."
-            )
+                x_style.append(feat)
+                y_style.append(style)
 
-        return np.stack(xs), np.asarray(colors), np.asarray(styles)
+                if color in COLOR_LABELS:
+                    x_color.append(feat)
+                    y_color.append(color)
+
+        if len(x_style) < 20:
+            raise RuntimeError("Недостаточно изображений для распознавания стиля.")
+        if len(x_color) < 20:
+            raise RuntimeError("Недостаточно изображений с разметкой цвета.")
+
+        return (
+            np.stack(x_style),
+            np.asarray(y_style),
+            np.stack(x_color),
+            np.asarray(y_color),
+        )
 
     @staticmethod
     def _new_model() -> Any:
@@ -138,38 +158,62 @@ class LightweightImageClassifier:
             ),
         )
 
-    def fit(self) -> None:
-        x, y_color, y_style = self._load_dataset()
-        self.sample_count = int(len(x))
+    @staticmethod
+    def _probability_errors(model: Any, x: np.ndarray, y: np.ndarray) -> tuple[float, float]:
+        probs = model.predict_proba(x)
+        classes = list(model.classes_)
+        one_hot = np.zeros_like(probs)
+        for i, label in enumerate(y):
+            one_hot[i, classes.index(label)] = 1.0
+        return (
+            float(mean_absolute_error(one_hot, probs)),
+            float(mean_squared_error(one_hot, probs)),
+        )
 
-        indices = np.arange(len(x))
-        train_idx, val_idx = train_test_split(
-            indices,
+    def fit(self) -> None:
+        x_style, y_style, x_color, y_color = self._load_dataset()
+        self.sample_count = int(len(x_style))
+
+        xs_train, xs_val, ys_train, ys_val = train_test_split(
+            x_style,
+            y_style,
             test_size=0.2,
             random_state=42,
             stratify=y_style,
         )
+        xc_train, xc_val, yc_train, yc_val = train_test_split(
+            x_color,
+            y_color,
+            test_size=0.2,
+            random_state=42,
+            stratify=y_color,
+        )
 
-        color_eval = self._new_model()
         style_eval = self._new_model()
-        color_eval.fit(x[train_idx], y_color[train_idx])
-        style_eval.fit(x[train_idx], y_style[train_idx])
+        color_eval = self._new_model()
+        style_eval.fit(xs_train, ys_train)
+        color_eval.fit(xc_train, yc_train)
 
-        color_pred = color_eval.predict(x[val_idx])
-        style_pred = style_eval.predict(x[val_idx])
+        style_pred = style_eval.predict(xs_val)
+        color_pred = color_eval.predict(xc_val)
+        style_mae, style_mse = self._probability_errors(style_eval, xs_val, ys_val)
+        color_mae, color_mse = self._probability_errors(color_eval, xc_val, yc_val)
 
         self.validation = {
-            "color_accuracy": float(accuracy_score(y_color[val_idx], color_pred)),
-            "color_f1_macro": float(f1_score(y_color[val_idx], color_pred, average="macro", zero_division=0)),
-            "style_accuracy": float(accuracy_score(y_style[val_idx], style_pred)),
-            "style_f1_macro": float(f1_score(y_style[val_idx], style_pred, average="macro", zero_division=0)),
+            "style_accuracy": float(accuracy_score(ys_val, style_pred)),
+            "style_f1_macro": float(f1_score(ys_val, style_pred, average="macro", zero_division=0)),
+            "style_mae": style_mae,
+            "style_mse": style_mse,
+            "color_accuracy": float(accuracy_score(yc_val, color_pred)),
+            "color_f1_macro": float(f1_score(yc_val, color_pred, average="macro", zero_division=0)),
+            "color_mae": color_mae,
+            "color_mse": color_mse,
         }
 
-        # Для рабочего ответа переобучаем на всём локальном датасете.
-        self.color_model = self._new_model()
         self.style_model = self._new_model()
-        self.color_model.fit(x, y_color)
-        self.style_model.fit(x, y_style)
+        self.color_model = self._new_model()
+        self.style_model.fit(x_style, y_style)
+        self.color_model.fit(x_color, y_color)
 
     def predict(self, img: Image.Image) -> LightweightPrediction:
         if self.color_model is None or self.style_model is None:
@@ -179,12 +223,9 @@ class LightweightImageClassifier:
         color_prob = self.color_model.predict_proba(feat)[0]
         style_prob = self.style_model.predict_proba(feat)[0]
 
-        color_labels = [str(x) for x in self.color_model.classes_]
-        style_labels = [str(x) for x in self.style_model.classes_]
-
         return LightweightPrediction(
-            color_labels=color_labels,
+            color_labels=[str(x) for x in self.color_model.classes_],
             color_probabilities=np.asarray(color_prob, dtype=np.float32),
-            style_labels=style_labels,
+            style_labels=[str(x) for x in self.style_model.classes_],
             style_probabilities=np.asarray(style_prob, dtype=np.float32),
         )
