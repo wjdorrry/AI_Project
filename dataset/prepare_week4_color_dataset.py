@@ -27,6 +27,7 @@ COLOR_MAP = {
     "Red": "Red",
     "Pink": "Pink",
     "Burgundy": "Burgundy",
+    "Maroon": "Burgundy",
     "Purple": "Purple",
     "Yellow": "Yellow",
     "Orange": "Orange",
