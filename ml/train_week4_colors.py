@@ -28,6 +28,7 @@ LATEST_DIR = Path(__file__).resolve().parent / "runs" / "latest"
 WEEK3_DIR = Path(__file__).resolve().parent / "runs" / "week3"
 WEEK3_MODEL = WEEK3_DIR / "model.pt"
 WEEK3_LABELS = WEEK3_DIR / "label_maps.json"
+WEEK3_METRICS = WEEK3_DIR / "metrics_summary.json"
 
 VIT_ID = "google/vit-base-patch16-224"
 
@@ -263,6 +264,47 @@ def save_history_plots(history: pd.DataFrame) -> None:
     plt.close()
 
 
+def save_before_after_comparison(best_row: dict[str, float]) -> dict[str, float] | None:
+    if not WEEK3_METRICS.exists():
+        return None
+
+    try:
+        payload = json.loads(WEEK3_METRICS.read_text(encoding="utf-8"))
+        old = payload.get("best_metrics", {})
+        old_acc = float(old["color_accuracy"])
+        old_f1 = float(old["color_f1"])
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+    new_acc = float(best_row["color_accuracy"])
+    new_f1 = float(best_row["color_f1"])
+
+    labels = ["Accuracy", "F1"]
+    before = [old_acc, old_f1]
+    after = [new_acc, new_f1]
+    x = list(range(len(labels)))
+    width = 0.35
+
+    plt.figure(figsize=(7, 5))
+    plt.bar([v - width / 2 for v in x], before, width=width, label="Неделя 3")
+    plt.bar([v + width / 2 for v in x], after, width=width, label="Неделя 4")
+    plt.xticks(x, labels)
+    plt.ylim(0, 1)
+    plt.ylabel("Значение")
+    plt.title("Качество распознавания цвета: до и после расширения")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(RUN_DIR / "before_after_color_metrics.png", dpi=180)
+    plt.close()
+
+    return {
+        "week3_color_accuracy": old_acc,
+        "week3_color_f1": old_f1,
+        "week4_color_accuracy": new_acc,
+        "week4_color_f1": new_f1,
+    }
+
+
 def save_confusion_matrix(y_true: list[int], y_pred: list[int]) -> None:
     cm = confusion_matrix(y_true, y_pred, labels=list(range(len(COLOR_LABELS))))
     fig, ax = plt.subplots(figsize=(12, 11))
@@ -429,6 +471,8 @@ def main() -> None:
     save_confusion_matrix(best_true, best_pred)
 
     best_row = history_df.loc[history_df["color_f1"].idxmax()].to_dict()
+    comparison = save_before_after_comparison(best_row)
+
     summary = {
         "dataset_size": int(len(df)),
         "train_size": int(len(train_df)),
@@ -442,6 +486,7 @@ def main() -> None:
             if k != "epoch" and not pd.isna(v)
         },
         "training_mode": "week3 transfer learning; ViT backbone and style head frozen; color head trained",
+        "before_after_comparison": comparison,
     }
 
     (RUN_DIR / "metrics_summary.json").write_text(
