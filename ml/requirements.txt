@@ -4,3 +4,6 @@ transformers
 pandas
 scikit-learn
 tqdm
+
+datasets
+matplotlib
