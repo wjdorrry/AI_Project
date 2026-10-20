@@ -97,7 +97,8 @@ def prepare_external(per_style: int, rng: random.Random) -> list[dict[str, str]]
     by_style: dict[str, list[int]] = {s: [] for s in EXTERNAL_STYLE_MAP}
     for idx, value in enumerate(ds["style_preference"]):
         key = str(value).strip().lower()
-        if key in by_style:
+        quality = str(ds["image_quality"][idx]).strip().lower()
+        if key in by_style and quality == "good":
             by_style[key].append(idx)
 
     output: list[dict[str, str]] = []
