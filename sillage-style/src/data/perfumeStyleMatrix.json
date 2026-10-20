@@ -171,23 +171,6 @@
       }
     },
     {
-      "tag": "Sportswear",
-      "categoryRu": "Стиль",
-      "scores": {
-        "Citrus": 9,
-        "Aquatic": 10,
-        "Green": 7,
-        "Fruity": 6,
-        "Woody": -2,
-        "Musk": 6,
-        "Powdery": 1,
-        "Gourmand": -6,
-        "Oriental": -10,
-        "Floral": 2,
-        "Leather": -8
-      }
-    },
-    {
       "tag": "Evening",
       "categoryRu": "Стиль",
       "scores": {
