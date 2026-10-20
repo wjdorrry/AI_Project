@@ -1,7 +1,7 @@
 {
   "meta": {
     "source": "PerfumeStyleMatrix.xlsx",
-    "description": "Веса соответствия тегов одежды/стиля парфюмерным семействам (-10..10)."
+    "description": "Веса соответствия цветов и расширенных стилей парфюмерным семействам (-10..10)."
   },
   "families": [
     "Citrus",
@@ -219,6 +219,125 @@
         "Oriental": 1,
         "Floral": 3,
         "Leather": 2
+      }
+    },
+    {
+      "tag": "Elegant",
+      "categoryRu": "Стиль",
+      "scores": {
+        "Citrus": 2,
+        "Aquatic": 0,
+        "Green": 1,
+        "Fruity": 2,
+        "Woody": 5,
+        "Musk": 7,
+        "Powdery": 7,
+        "Gourmand": 2,
+        "Oriental": 6,
+        "Floral": 8,
+        "Leather": 4
+      }
+    },
+    {
+      "tag": "Casual",
+      "categoryRu": "Стиль",
+      "scores": {
+        "Citrus": 7,
+        "Aquatic": 6,
+        "Green": 7,
+        "Fruity": 5,
+        "Woody": 4,
+        "Musk": 6,
+        "Powdery": 3,
+        "Gourmand": 1,
+        "Oriental": 0,
+        "Floral": 4,
+        "Leather": 2
+      }
+    },
+    {
+      "tag": "Romantic",
+      "categoryRu": "Стиль",
+      "scores": {
+        "Citrus": 4,
+        "Aquatic": 2,
+        "Green": 3,
+        "Fruity": 7,
+        "Woody": 0,
+        "Musk": 6,
+        "Powdery": 8,
+        "Gourmand": 6,
+        "Oriental": 4,
+        "Floral": 10,
+        "Leather": -3
+      }
+    },
+    {
+      "tag": "Minimalist",
+      "categoryRu": "Стиль",
+      "scores": {
+        "Citrus": 5,
+        "Aquatic": 6,
+        "Green": 4,
+        "Fruity": 1,
+        "Woody": 5,
+        "Musk": 10,
+        "Powdery": 6,
+        "Gourmand": -3,
+        "Oriental": -2,
+        "Floral": 3,
+        "Leather": 2
+      }
+    },
+    {
+      "tag": "Sporty",
+      "categoryRu": "Стиль",
+      "scores": {
+        "Citrus": 9,
+        "Aquatic": 10,
+        "Green": 7,
+        "Fruity": 6,
+        "Woody": -2,
+        "Musk": 6,
+        "Powdery": 1,
+        "Gourmand": -6,
+        "Oriental": -10,
+        "Floral": 2,
+        "Leather": -8
+      }
+    },
+    {
+      "tag": "Boho",
+      "categoryRu": "Стиль",
+      "scores": {
+        "Citrus": 4,
+        "Aquatic": 1,
+        "Green": 8,
+        "Fruity": 5,
+        "Woody": 8,
+        "Musk": 4,
+        "Powdery": 2,
+        "Gourmand": 2,
+        "Oriental": 6,
+        "Floral": 7,
+        "Leather": 4
+      }
+    },
+    {
+      "tag": "Office",
+      "categoryRu": "Стиль",
+      "scores": {
+        "Citrus": 3,
+        "Aquatic": 2,
+        "Green": 2,
+        "Fruity": 1,
+        "Woody": 7,
+        "Musk": 8,
+        "Powdery": 6,
+        "Gourmand": -2,
+        "Oriental": 3,
+        "Floral": 4,
+        "Leather": 5
       }
     }
   ]
