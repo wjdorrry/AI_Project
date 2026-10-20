@@ -34,6 +34,7 @@ CONFIDENCE_THRESHOLD = 0.55
 MARGIN_THRESHOLD = 0.10
 
 ALLOWED_COLORS = ["Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink"]
+STYLE_ALIASES = {"Sportswear": "Sporty"}
 
 
 def _center_crop(img: Image.Image, frac: float = 0.6) -> Image.Image:
@@ -300,7 +301,7 @@ async def analyze(
             style_prob = out["logits_style"][0].softmax(dim=0).cpu().tolist()
 
         color_labels = _color_labels
-        style_labels = _style_labels
+        style_labels = [STYLE_ALIASES.get(x, x) for x in _style_labels]
         note = "Результат получен обученной multi-task ViT-моделью."
 
     elif _mode == LIGHTWEIGHT_MODE:
