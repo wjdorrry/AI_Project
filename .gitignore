@@ -6,3 +6,6 @@ ai-service/.venv312/
 dataset/week3_images/
 dataset/week3_labels.csv
 ml/runs/week3/model.pt
+dataset/week4_color_images/
+dataset/week4_color_labels.csv
+ml/runs/week4/model.pt
