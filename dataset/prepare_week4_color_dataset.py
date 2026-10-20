@@ -35,7 +35,7 @@ COLOR_MAP = {
     "Cream": "Cream",
 }
 
-COLOR_LABELS = list(COLOR_MAP.values())
+COLOR_LABELS = list(dict.fromkeys(COLOR_MAP.values()))
 
 
 def main() -> None:
