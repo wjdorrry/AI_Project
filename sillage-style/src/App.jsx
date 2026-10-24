@@ -96,7 +96,7 @@ function MainApp() {
   }, [result, perfumeCatalog, excludedList]);
 
   const COLOR_TAGS = useMemo(
-    () => new Set(["Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink"]),
+    () => new Set(["Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink", "Burgundy", "Purple", "Yellow", "Orange", "Navy", "Cream"]),
     []
   );
   const STYLE_TAGS = useMemo(() => new Set(["Elegant", "Casual", "Romantic", "Minimalist", "Sporty", "Streetwear", "Boho", "Office", "Evening"]), []);

@@ -161,3 +161,90 @@ MAE и MSE считаются между вектором вероятносте
 
 Файлы сохраняются в `ml/runs/week3/`.
 Лучшая модель также сохраняется в `ml/runs/latest/model.pt`.
+
+
+---
+
+## Неделя 4 — расширение распознавания цвета
+
+На этом этапе цветовая классификация расширена с 9 до 15 классов:
+
+- Black
+- White
+- Grey
+- Beige
+- Blue
+- Brown
+- Green
+- Red
+- Pink
+- Burgundy
+- Purple
+- Yellow
+- Orange
+- Navy
+- Cream
+
+### 1. Подготовка цветового датасета
+
+Используется открытый fashion-датасет `HEBA2002/fashion-product-images-small`.
+Из него выбираются только изображения одежды (`masterCategory = Apparel`) и только нужные 15 цветов.
+
+По умолчанию берётся 60 изображений на каждый цвет, всего 900 изображений.
+
+Запуск из корня проекта:
+
+```powershell
+.\ml\.venv_week3\Scripts\python.exe .\dataset\prepare_week4_color_dataset.py
+```
+
+Будут созданы:
+
+- `dataset/week4_color_images/`
+- `dataset/week4_color_labels.csv`
+
+### 2. Дообучение цветовой части ViT
+
+Неделя 4 использует лучшую модель недели 3 как исходную.
+ViT-база и style-голова замораживаются, чтобы не ухудшить уже обученные 9 стилей.
+Обучается новая color-голова на 15 цветах.
+
+```powershell
+cd ml
+$env:SILLAGE_BATCH_SIZE="4"
+.\.venv_week3\Scripts\python.exe .\train_week4_colors.py
+```
+
+Если видеопамяти недостаточно, используйте:
+
+```powershell
+$env:SILLAGE_BATCH_SIZE="1"
+```
+
+### 3. Метрики
+
+После каждой эпохи рассчитываются реальные:
+
+- Color Accuracy
+- Color macro-F1
+- Color MAE
+- Color MSE
+- Train loss
+- Validation loss
+
+Лучшая эпоха выбирается по Color F1.
+
+### 4. Графики
+
+В `ml/runs/week4/` автоматически сохраняются:
+
+- `dataset_distribution.png` — распределение 15 цветов;
+- `loss_curve.png` — train/validation loss;
+- `accuracy_f1_curve.png` — Color Accuracy и F1;
+- `mae_mse_curve.png` — Color MAE и MSE;
+- `color_confusion_matrix.png` — матрица ошибок по 15 цветам;
+- `before_after_color_metrics.png` — сравнение качества цвета до и после недели 4;
+- `training_history.csv`;
+- `metrics_summary.json`.
+
+Лучшая модель также сохраняется в `ml/runs/latest/model.pt` вместе с новой картой из 15 цветовых классов.

@@ -14,7 +14,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 
-COLOR_LABELS = ["Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink"]
+COLOR_LABELS = ["Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink", "Burgundy", "Purple", "Yellow", "Orange", "Navy", "Cream"]
 STYLE_LABELS = [
     "Elegant",
     "Casual",
@@ -47,13 +47,22 @@ class LightweightImageClassifier:
 
         week3_labels = self.dataset_dir / "week3_labels.csv"
         week3_images = self.dataset_dir / "week3_images"
+        week4_labels = self.dataset_dir / "week4_color_labels.csv"
+        week4_images = self.dataset_dir / "week4_color_images"
 
         if week3_labels.exists() and week3_images.exists():
-            self.labels_csv = week3_labels
-            self.images_dir = week3_images
+            self.style_labels_csv = week3_labels
+            self.style_images_dir = week3_images
         else:
-            self.labels_csv = self.dataset_dir / "labels_clean.csv"
-            self.images_dir = self.dataset_dir / "images"
+            self.style_labels_csv = self.dataset_dir / "labels_clean.csv"
+            self.style_images_dir = self.dataset_dir / "images"
+
+        if week4_labels.exists() and week4_images.exists():
+            self.color_labels_csv = week4_labels
+            self.color_images_dir = week4_images
+        else:
+            self.color_labels_csv = self.dataset_dir / "labels_clean.csv"
+            self.color_images_dir = self.dataset_dir / "images"
 
         self.color_model: Any | None = None
         self.style_model: Any | None = None
@@ -100,22 +109,20 @@ class LightweightImageClassifier:
     def _load_dataset(
         self,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        if not self.labels_csv.exists():
-            raise RuntimeError(f"Не найден файл разметки: {self.labels_csv}")
-
         x_style: list[np.ndarray] = []
         y_style: list[str] = []
         x_color: list[np.ndarray] = []
         y_color: list[str] = []
 
-        with self.labels_csv.open("r", encoding="utf-8-sig", newline="") as f:
+        if not self.style_labels_csv.exists():
+            raise RuntimeError(f"Не найден файл разметки стиля: {self.style_labels_csv}")
+
+        with self.style_labels_csv.open("r", encoding="utf-8-sig", newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 file_name = str(row.get("file", "")).strip()
-                color = str(row.get("color", "")).strip()
-                style = str(row.get("style", "")).strip()
-                style = STYLE_ALIASES.get(style, style)
-                path = self.images_dir / file_name
+                style = STYLE_ALIASES.get(str(row.get("style", "")).strip(), str(row.get("style", "")).strip())
+                path = self.style_images_dir / file_name
 
                 if not file_name or not path.exists() or style not in STYLE_LABELS:
                     continue
@@ -129,9 +136,27 @@ class LightweightImageClassifier:
                 x_style.append(feat)
                 y_style.append(style)
 
-                if color in COLOR_LABELS:
-                    x_color.append(feat)
-                    y_color.append(color)
+        if not self.color_labels_csv.exists():
+            raise RuntimeError(f"Не найден файл разметки цвета: {self.color_labels_csv}")
+
+        with self.color_labels_csv.open("r", encoding="utf-8-sig", newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                file_name = str(row.get("file", "")).strip()
+                color = str(row.get("color", "")).strip()
+                path = self.color_images_dir / file_name
+
+                if not file_name or not path.exists() or color not in COLOR_LABELS:
+                    continue
+
+                try:
+                    with Image.open(path) as img:
+                        feat = self._features(img)
+                except OSError:
+                    continue
+
+                x_color.append(feat)
+                y_color.append(color)
 
         if len(x_style) < 20:
             raise RuntimeError("Недостаточно изображений для распознавания стиля.")
@@ -172,7 +197,7 @@ class LightweightImageClassifier:
 
     def fit(self) -> None:
         x_style, y_style, x_color, y_color = self._load_dataset()
-        self.sample_count = int(len(x_style))
+        self.sample_count = int(len(x_style) + len(x_color))
 
         xs_train, xs_val, ys_train, ys_val = train_test_split(
             x_style,

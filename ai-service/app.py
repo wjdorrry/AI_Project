@@ -33,7 +33,7 @@ UNAVAILABLE_MODE = "unavailable"
 CONFIDENCE_THRESHOLD = 0.55
 MARGIN_THRESHOLD = 0.10
 
-ALLOWED_COLORS = ["Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink"]
+ALLOWED_COLORS = ["Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink", "Burgundy", "Purple", "Yellow", "Orange", "Navy", "Cream"]
 STYLE_ALIASES = {"Sportswear": "Sporty"}
 
 

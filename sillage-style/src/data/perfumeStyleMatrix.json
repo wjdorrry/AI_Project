@@ -1,7 +1,7 @@
 {
   "meta": {
     "source": "PerfumeStyleMatrix.xlsx",
-    "description": "Веса соответствия цветов и расширенных стилей парфюмерным семействам (-10..10)."
+    "description": "Веса соответствия 15 цветов и 9 стилей парфюмерным семействам (-10..10)."
   },
   "families": [
     "Citrus",
@@ -168,6 +168,108 @@
         "Oriental": 2,
         "Floral": 10,
         "Leather": -3
+      }
+    },
+    {
+      "tag": "Burgundy",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": -3,
+        "Aquatic": -5,
+        "Green": -2,
+        "Fruity": 5,
+        "Woody": 6,
+        "Musk": 4,
+        "Powdery": 1,
+        "Gourmand": 6,
+        "Oriental": 10,
+        "Floral": 6,
+        "Leather": 8
+      }
+    },
+    {
+      "tag": "Purple",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 1,
+        "Aquatic": -1,
+        "Green": -1,
+        "Fruity": 6,
+        "Woody": 3,
+        "Musk": 5,
+        "Powdery": 7,
+        "Gourmand": 5,
+        "Oriental": 8,
+        "Floral": 9,
+        "Leather": 2
+      }
+    },
+    {
+      "tag": "Yellow",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 10,
+        "Aquatic": 4,
+        "Green": 5,
+        "Fruity": 8,
+        "Woody": -2,
+        "Musk": 2,
+        "Powdery": 1,
+        "Gourmand": 3,
+        "Oriental": -3,
+        "Floral": 5,
+        "Leather": -6
+      }
+    },
+    {
+      "tag": "Orange",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 10,
+        "Aquatic": 2,
+        "Green": 3,
+        "Fruity": 9,
+        "Woody": 1,
+        "Musk": 2,
+        "Powdery": 0,
+        "Gourmand": 5,
+        "Oriental": 2,
+        "Floral": 4,
+        "Leather": -4
+      }
+    },
+    {
+      "tag": "Navy",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 4,
+        "Aquatic": 9,
+        "Green": 4,
+        "Fruity": 1,
+        "Woody": 6,
+        "Musk": 7,
+        "Powdery": 3,
+        "Gourmand": -2,
+        "Oriental": 2,
+        "Floral": 2,
+        "Leather": 4
+      }
+    },
+    {
+      "tag": "Cream",
+      "categoryRu": "Цвет",
+      "scores": {
+        "Citrus": 4,
+        "Aquatic": 3,
+        "Green": 3,
+        "Fruity": 3,
+        "Woody": 5,
+        "Musk": 9,
+        "Powdery": 9,
+        "Gourmand": 4,
+        "Oriental": 2,
+        "Floral": 6,
+        "Leather": 1
       }
     },
     {
