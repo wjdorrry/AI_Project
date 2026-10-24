@@ -99,7 +99,7 @@ function MainApp() {
     () => new Set(["Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink"]),
     []
   );
-  const STYLE_TAGS = useMemo(() => new Set(["Sportswear", "Evening", "Streetwear"]), []);
+  const STYLE_TAGS = useMemo(() => new Set(["Elegant", "Casual", "Romantic", "Minimalist", "Sporty", "Streetwear", "Boho", "Office", "Evening"]), []);
 
   const runAiTagging = async () => {
     setAiError("");

@@ -3,3 +3,6 @@ ml/runs/latest/model.pt
 ai-service/sillage_style.db
 ai-service/.auth_secret
 ai-service/.venv312/
+dataset/week3_images/
+dataset/week3_labels.csv
+ml/runs/week3/model.pt
