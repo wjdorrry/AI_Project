@@ -1,6 +1,21 @@
 import { FAMILY_LABEL_RU, FAMILY_DESCRIPTION_RU } from "../content/familyCopy";
 import "./ResultDisplay.css";
 
+const TAG_LABEL_RU = {
+  Spring: "Весна",
+  Summer: "Лето",
+  Autumn: "Осень",
+  Winter: "Зима",
+};
+
+function factorLabel(item) {
+  return TAG_LABEL_RU[item.tag] ?? item.tag;
+}
+
+function signed(value) {
+  return value > 0 ? `+${value}` : String(value);
+}
+
 export default function ResultDisplay({
   winner,
   ranked,
@@ -8,12 +23,13 @@ export default function ResultDisplay({
   hasTags,
   perfumePicks = [],
   perfumeCatalogSize = 0,
+  explanation = null,
 }) {
   if (!hasTags) {
     return (
       <aside className="rd rd--empty" aria-live="polite">
         <div className="rd-frame">
-          <p className="rd-placeholder">Выберите теги образа и нажмите «Сопоставить аромат».</p>
+          <p className="rd-placeholder">Выберите цвет, стиль и сезон, затем нажмите «Сопоставить аромат».</p>
         </div>
       </aside>
     );
@@ -32,7 +48,6 @@ export default function ResultDisplay({
 
   const label = FAMILY_LABEL_RU[winner.family] ?? winner.family;
   const desc = FAMILY_DESCRIPTION_RU[winner.family] ?? "";
-
   const top = ranked.slice(0, 5);
 
   return (
@@ -43,10 +58,53 @@ export default function ResultDisplay({
         <h2 className="rd-title">{label}</h2>
         <p className="rd-en">{winner.family}</p>
         <p className="rd-desc">{desc}</p>
+
         <div className="rd-score">
           <span className="rd-score-label">Итоговый балл</span>
           <span className="rd-score-val">{winner.score}</span>
         </div>
+
+        {explanation && (
+          <div className="rd-why">
+            <h3 className="rd-why-title">Почему этот аромат?</h3>
+            <p className="rd-why-text">
+              Семейство «{label}» получило самый высокий итоговый балл. Ниже показано, как каждый фактор повлиял на этот результат.
+            </p>
+
+            <ul className="rd-why-list">
+              {explanation.factors.map((item) => (
+                <li key={`${item.categoryRu}-${item.tag}`} className="rd-why-row">
+                  <span className="rd-why-factor">
+                    <span className="rd-why-cat">{item.categoryRu}</span>
+                    <span className="rd-why-name">{factorLabel(item)}</span>
+                  </span>
+                  <span className={`rd-why-score ${item.score >= 0 ? "rd-why-score--plus" : "rd-why-score--minus"}`}>
+                    {signed(item.score)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            {explanation.positive?.length > 0 && (
+              <p className="rd-why-summary">
+                Сильнее всего результат поддержали:{" "}
+                {explanation.positive
+                  .slice(0, 3)
+                  .map((item) => `${factorLabel(item)} (${signed(item.score)})`)
+                  .join(" · ")}.
+              </p>
+            )}
+
+            {explanation.negative?.length > 0 && (
+              <p className="rd-why-summary rd-why-summary--muted">
+                Снижали итоговый балл:{" "}
+                {explanation.negative
+                  .map((item) => `${factorLabel(item)} (${signed(item.score)})`)
+                  .join(" · ")}.
+              </p>
+            )}
+          </div>
+        )}
 
         {excludedFamilies.length > 0 && (
           <div className="rd-excluded">
@@ -105,6 +163,7 @@ export default function ResultDisplay({
                     <span className="rd-perf-brand">{p.brand}</span>
                     <span className="rd-perf-name">{p.name}</span>
                   </div>
+
                   {Array.isArray(p.families) && p.families.length > 0 && (
                     <div className="rd-perf-fams">
                       {p.families.map((f) => (
@@ -113,6 +172,16 @@ export default function ResultDisplay({
                         </span>
                       ))}
                     </div>
+                  )}
+
+                  {Array.isArray(p.matchedFamilies) && p.matchedFamilies.length > 0 && (
+                    <p className="rd-perf-why">
+                      Почему в подборке: совпадает с{" "}
+                      {p.matchedFamilies
+                        .slice(0, 3)
+                        .map((item) => FAMILY_LABEL_RU[item.family] ?? item.family)
+                        .join(", ")}.
+                    </p>
                   )}
                 </li>
               ))}
