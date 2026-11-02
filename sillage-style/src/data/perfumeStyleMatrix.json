@@ -1,7 +1,7 @@
 {
   "meta": {
     "source": "PerfumeStyleMatrix.xlsx",
-    "description": "Веса соответствия 15 цветов и 9 стилей парфюмерным семействам (-10..10)."
+    "description": "Веса соответствия 15 цветов, 9 стилей и 4 сезонов парфюмерным семействам (-10..10)."
   },
   "families": [
     "Citrus",
@@ -423,6 +423,74 @@
         "Oriental": 3,
         "Floral": 4,
         "Leather": 5
+      }
+    },
+    {
+      "tag": "Spring",
+      "categoryRu": "Сезон",
+      "scores": {
+        "Citrus": 6,
+        "Aquatic": 4,
+        "Green": 8,
+        "Fruity": 7,
+        "Woody": 2,
+        "Musk": 3,
+        "Powdery": 4,
+        "Gourmand": 1,
+        "Oriental": -2,
+        "Floral": 9,
+        "Leather": -5
+      }
+    },
+    {
+      "tag": "Summer",
+      "categoryRu": "Сезон",
+      "scores": {
+        "Citrus": 10,
+        "Aquatic": 10,
+        "Green": 7,
+        "Fruity": 7,
+        "Woody": -2,
+        "Musk": 3,
+        "Powdery": 0,
+        "Gourmand": -7,
+        "Oriental": -8,
+        "Floral": 5,
+        "Leather": -8
+      }
+    },
+    {
+      "tag": "Autumn",
+      "categoryRu": "Сезон",
+      "scores": {
+        "Citrus": 0,
+        "Aquatic": -4,
+        "Green": 2,
+        "Fruity": 3,
+        "Woody": 10,
+        "Musk": 5,
+        "Powdery": 3,
+        "Gourmand": 6,
+        "Oriental": 7,
+        "Floral": 2,
+        "Leather": 7
+      }
+    },
+    {
+      "tag": "Winter",
+      "categoryRu": "Сезон",
+      "scores": {
+        "Citrus": -4,
+        "Aquatic": -8,
+        "Green": -3,
+        "Fruity": 2,
+        "Woody": 8,
+        "Musk": 6,
+        "Powdery": 5,
+        "Gourmand": 9,
+        "Oriental": 10,
+        "Floral": 3,
+        "Leather": 7
       }
     }
   ]

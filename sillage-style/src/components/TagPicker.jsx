@@ -1,6 +1,6 @@
 import "./TagPicker.css";
 
-/** Демо-имитация тегов с «визуального анализа» — без API всё выбирается вручную. */
+/** Цвет и стиль, определённые ИИ, можно при необходимости скорректировать вручную. */
 export default function TagPicker({ matrixTags, selected, onToggle }) {
   const byCat = matrixTags.reduce((acc, t) => {
     const c = t.categoryRu || "Прочее";
@@ -15,7 +15,7 @@ export default function TagPicker({ matrixTags, selected, onToggle }) {
         <h2 id="tp-title" className="tp-title">
           Теги образа
         </h2>
-        <p className="tp-sub">Без бэкенда CV: отметьте то, что видите на фото — как будто это вернул API распознавания.</p>
+        <p className="tp-sub">ИИ выбирает цвет и стиль автоматически. При необходимости результат можно поправить вручную.</p>
       </div>
       {Object.entries(byCat).map(([cat, items]) => (
         <div key={cat} className="tp-block">
