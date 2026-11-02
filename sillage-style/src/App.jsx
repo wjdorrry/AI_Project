@@ -6,6 +6,7 @@ import ImageUploader from "./components/ImageUploader.jsx";
 import TagPicker from "./components/TagPicker.jsx";
 import PreferenceToggle from "./components/PreferenceToggle.jsx";
 import ResultDisplay from "./components/ResultDisplay.jsx";
+import SeasonPicker from "./components/SeasonPicker.jsx";
 import AuthGate from "./components/AuthGate.jsx";
 import { authHeaders } from "./utils/api";
 import "./App.css";
@@ -33,6 +34,7 @@ function MainApp() {
   const [aiTopColor, setAiTopColor] = useState([]);
   const [aiTopStyle, setAiTopStyle] = useState([]);
   const [aiPicked, setAiPicked] = useState({ color: "", style: "" });
+  const [season, setSeason] = useState("");
   /** Каталог из public/perfumes.json (~не в бандле). */
   const [perfumeCatalog, setPerfumeCatalog] = useState({ perfumes: [] });
 
@@ -58,6 +60,7 @@ function MainApp() {
 
   const families = matrix.families;
   const matrixTags = matrix.tags;
+  const visualMatrixTags = useMemo(() => matrixTags.filter((t) => t.categoryRu !== "Сезон"), [matrixTags]);
 
   const toggleTag = useCallback((tag) => {
     setSelectedTags((prev) => {
@@ -79,7 +82,7 @@ function MainApp() {
     setSubmitted(false);
   }, []);
 
-  const activeTagList = useMemo(() => [...selectedTags], [selectedTags]);
+  const activeTagList = useMemo(() => [...selectedTags, ...(season ? [season] : [])], [selectedTags, season]);
 
   const excludedList = useMemo(() => [...excluded], [excluded]);
 
@@ -129,7 +132,7 @@ function MainApp() {
       }
       setAiMode(data.model_mode || "");
 
-      const allowed = new Set(matrixTags.map((t) => t.tag));
+      const allowed = new Set(visualMatrixTags.map((t) => t.tag));
       const scored = (data.tags || []).filter((x) => allowed.has(x.tag));
 
       const colors = scored
@@ -157,7 +160,7 @@ function MainApp() {
       setAiPicked({ color: bestColor, style: bestStyle });
       setSelectedTags(new Set(picked));
       // При высокой уверенности сразу показываем рекомендацию. При низкой — ждём подтверждения пользователя.
-      setSubmitted(picked.length > 0 && !lowConfidence);
+      setSubmitted(picked.length > 0 && !lowConfidence && Boolean(season));
     } catch (e) {
       const hint =
         e?.message?.includes("Failed to fetch") || e?.name === "TypeError"
@@ -172,7 +175,7 @@ function MainApp() {
   };
 
   const runMatch = () => {
-    if (activeTagList.length === 0) return;
+    if (selectedTags.size === 0 || !season) return;
     setBusy(true);
     window.setTimeout(() => {
       setSubmitted(true);
@@ -184,9 +187,9 @@ function MainApp() {
     <div className="app">
       <header className="app-hero">
         <p className="app-brand">Sillage&amp;Style</p>
-        <h1 className="app-title">Стиль одежды и семейство аромата</h1>
+        <h1 className="app-title">Образ, сезон и семейство аромата</h1>
         <p className="app-lead">
-          Экспертная визуализация матрицы весов: теги образа, жёсткие исключения и итоговая рекомендация — всё в браузере, без сервера.
+          ИИ определяет цвет и стиль образа, а система учитывает выбранный сезон и рассчитывает подходящие семейства ароматов.
         </p>
       </header>
 
@@ -218,14 +221,22 @@ function MainApp() {
               </div>
             )}
           </div>
-          <TagPicker matrixTags={matrixTags} selected={selectedTags} onToggle={toggleTag} />
+          <TagPicker matrixTags={visualMatrixTags} selected={selectedTags} onToggle={toggleTag} />
+          <SeasonPicker
+            value={season}
+            onChange={(nextSeason) => {
+              setSeason(nextSeason);
+              setSubmitted(false);
+            }}
+          />
           <PreferenceToggle families={families} excluded={excluded} onToggle={toggleExclude} />
 
           <div className="app-actions">
-            <button type="button" className="app-btn" disabled={activeTagList.length === 0 || busy} onClick={runMatch}>
+            <button type="button" className="app-btn" disabled={selectedTags.size === 0 || !season || busy} onClick={runMatch}>
               {busy ? "Считаем…" : "Сопоставить аромат"}
             </button>
-            {activeTagList.length === 0 && <span className="app-hint">Выберите хотя бы один тег</span>}
+            {selectedTags.size === 0 && <span className="app-hint">Сначала определите или выберите цвет и стиль</span>}
+            {selectedTags.size > 0 && !season && <span className="app-hint">Выберите сезон</span>}
           </div>
         </div>
 
