@@ -48,7 +48,16 @@ Write-Host "Installing backend dependencies..."
 & $Py -m pip install --upgrade pip -q
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+# Модель недели 4 обучалась на PyTorch 2.6.0 + CUDA 11.8 и Transformers 5.20.2.
+# Используем те же версии в backend, чтобы state_dict имел ту же структуру слоёв.
+& $Py -m pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu118
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
 & $Py -m pip install -r (Join-Path $Root "requirements.txt")
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+Write-Host "Checking AI runtime versions..."
+& $Py -c "import torch, torchvision, transformers; print('Torch:', torch.__version__); print('Torchvision:', torchvision.__version__); print('Transformers:', transformers.__version__); print('CUDA:', torch.cuda.is_available())"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host ""
