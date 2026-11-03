@@ -9,3 +9,6 @@ ml/runs/week3/model.pt
 dataset/week4_color_images/
 dataset/week4_color_labels.csv
 ml/runs/week4/model.pt
+dataset/week6_color_images/
+dataset/week6_color_labels.csv
+ml/runs/week6_color_finetune/model.pt
