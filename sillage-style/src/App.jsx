@@ -248,6 +248,7 @@ function MainApp() {
             excludedFamilies={excludedList}
             perfumePicks={perfumePicks}
             perfumeCatalogSize={perfumeCatalog.perfumes?.length ?? 0}
+            explanation={result?.explanation ?? null}
           />
         </div>
       </main>
