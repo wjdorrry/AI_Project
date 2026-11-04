@@ -23,14 +23,14 @@ from transformers import ViTImageProcessor, ViTModel
 
 ROOT = Path(__file__).resolve().parent.parent
 DATASET_DIR = ROOT / "dataset"
-IMAGES_DIR = DATASET_DIR / "week6_color_images"
-LABELS_CSV = DATASET_DIR / "week6_color_labels.csv"
+IMAGES_DIR = DATASET_DIR / "week6_color_7500_images"
+LABELS_CSV = DATASET_DIR / "week6_color_7500_labels.csv"
 
 WEEK3_IMAGES = DATASET_DIR / "week3_images"
 WEEK3_LABELS_CSV = DATASET_DIR / "week3_labels.csv"
 
-RUN_DIR = Path(__file__).resolve().parent / "runs" / "week6_color_finetune"
-BASELINE_DIR = Path(__file__).resolve().parent / "runs" / "week4"
+RUN_DIR = Path(__file__).resolve().parent / "runs" / "week6_color_7500"
+BASELINE_DIR = Path(__file__).resolve().parent / "runs" / "week6_color_finetune"
 BASELINE_MODEL = BASELINE_DIR / "model.pt"
 BASELINE_LABELS = BASELINE_DIR / "label_maps.json"
 
@@ -133,7 +133,7 @@ def load_baseline(model: MultiHeadViT) -> None:
     checkpoint = torch.load(BASELINE_MODEL, map_location="cpu", weights_only=False)
     state = checkpoint.get("model", checkpoint)
     model.load_state_dict(state, strict=True)
-    print("Загружена лучшая модель недели 4 (15 цветов).")
+    print("Загружена улучшенная модель на 1800 изображениях (15 цветов).")
 
 
 def configure_finetuning(model: MultiHeadViT) -> int:
@@ -306,7 +306,7 @@ def save_comparison(baseline: dict[str, float], improved: dict[str, float]) -> N
     width = 0.35
 
     plt.figure(figsize=(7, 5))
-    plt.bar([v - width / 2 for v in x], before, width=width, label="Week 4 baseline")
+    plt.bar([v - width / 2 for v in x], before, width=width, label="1800 baseline")
     plt.bar([v + width / 2 for v in x], after, width=width, label="Fine-tuned")
     plt.xticks(x, labels)
     plt.ylim(0, 1)
@@ -327,7 +327,7 @@ def main() -> None:
 
     if not LABELS_CSV.exists():
         raise SystemExit(
-            f"Не найден {LABELS_CSV}. Сначала запустите dataset/prepare_week6_color_dataset.py"
+            f"Не найден {LABELS_CSV}. Сначала подготовьте набор 7500 изображений."
         )
     if not BASELINE_MODEL.exists():
         raise SystemExit(f"Не найдена модель недели 4: {BASELINE_MODEL}")
@@ -383,7 +383,7 @@ def main() -> None:
     loss_fn = nn.CrossEntropyLoss()
     baseline_test, _, _ = evaluate_color(baseline, test_loader, device, loss_fn)
     print(
-        "Baseline Week 4 на новом test: "
+        "Baseline 1800 на новом test: "
         f"Accuracy={baseline_test['accuracy']:.3f}, F1={baseline_test['f1_macro']:.3f}"
     )
 
@@ -496,12 +496,12 @@ def main() -> None:
         baseline_style = evaluate_style(baseline, style_loader, device)
         improved_style = evaluate_style(best_model, style_loader, device)
         style_comparison = {
-            "baseline_week4": baseline_style,
+            "baseline_1800": baseline_style,
             "improved": improved_style,
         }
         print(
             "Style check: "
-            f"Week4 F1={baseline_style['f1_macro']:.3f} -> "
+            f"1800 F1={baseline_style['f1_macro']:.3f} -> "
             f"Improved F1={improved_style['f1_macro']:.3f}"
         )
 
@@ -513,7 +513,7 @@ def main() -> None:
         "test_size": int(len(test_df)),
         "color_labels": COLOR_LABELS,
         "style_labels": STYLE_LABELS,
-        "starting_model": "week4/model.pt",
+        "starting_model": "week6_color_finetune/model.pt",
         "unfrozen_last_vit_block": int(last_layer),
         "head_lr": HEAD_LR,
         "backbone_lr": BACKBONE_LR,
@@ -528,7 +528,7 @@ def main() -> None:
             "loss": float(best_row["val_loss"]),
         },
         "same_test_comparison": {
-            "baseline_week4": baseline_test,
+            "baseline_1800": baseline_test,
             "improved": improved_test,
         },
         "style_preservation_check": style_comparison,
@@ -545,7 +545,7 @@ def main() -> None:
                 "style_labels": STYLE_LABELS,
                 "vit_id": VIT_ID,
                 "week": 6,
-                "stage": "color_finetune",
+                "stage": "color_finetune_7500",
             },
             ensure_ascii=False,
             indent=2,
@@ -557,7 +557,7 @@ def main() -> None:
     print(f"Лучшая эпоха: {summary['best_epoch']}")
     print(
         "Одна и та же test-выборка: "
-        f"Week4 Accuracy={baseline_test['accuracy']:.3f}, F1={baseline_test['f1_macro']:.3f} | "
+        f"1800 Accuracy={baseline_test['accuracy']:.3f}, F1={baseline_test['f1_macro']:.3f} | "
         f"Improved Accuracy={improved_test['accuracy']:.3f}, F1={improved_test['f1_macro']:.3f}"
     )
     print(f"Результаты: {RUN_DIR}")
