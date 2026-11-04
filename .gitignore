@@ -12,3 +12,6 @@ ml/runs/week4/model.pt
 dataset/week6_color_images/
 dataset/week6_color_labels.csv
 ml/runs/week6_color_finetune/model.pt
+dataset/week6_color_7500_images/
+dataset/week6_color_7500_labels.csv
+ml/runs/week6_color_7500/model.pt
