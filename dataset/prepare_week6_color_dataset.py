@@ -11,8 +11,8 @@ from datasets import load_dataset
 
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_IMAGES = ROOT / "dataset" / "week6_color_images"
-OUT_LABELS = ROOT / "dataset" / "week6_color_labels.csv"
+OUT_IMAGES = ROOT / "dataset" / "week6_color_7500_images"
+OUT_LABELS = ROOT / "dataset" / "week6_color_7500_labels.csv"
 
 HF_DATASET = "HEBA2002/fashion-product-images-small"
 
@@ -43,10 +43,10 @@ def main() -> None:
     parser.add_argument(
         "--per-color",
         type=int,
-        default=120,
-        help="Количество изображений на каждый цвет. По умолчанию 120 (1800 изображений).",
+        default=500,
+        help="Количество изображений на каждый цвет. По умолчанию 500 (7500 изображений).",
     )
-    parser.add_argument("--seed", type=int, default=84)
+    parser.add_argument("--seed", type=int, default=126)
     args = parser.parse_args()
 
     if args.per_color < 60:
@@ -60,8 +60,11 @@ def main() -> None:
     print("Используются только изображения одежды (masterCategory = Apparel).")
     print(f"Цель: {args.per_color} изображений на каждый из {len(COLOR_LABELS)} цветов.")
 
-    ds = load_dataset(HF_DATASET, split="train", streaming=True)
-    ds = ds.shuffle(seed=args.seed, buffer_size=15000)
+    # Для большого набора загружаем датасет в локальный кэш целиком.
+    # Это надёжнее streaming-режима при нестабильном соединении: после успешной
+    # загрузки повторные запуски используют локальный кэш Hugging Face.
+    ds = load_dataset(HF_DATASET, split="train")
+    ds = ds.shuffle(seed=args.seed)
 
     selected: dict[str, list[dict]] = {label: [] for label in COLOR_LABELS}
 
@@ -95,7 +98,7 @@ def main() -> None:
         details = ", ".join(f"{k}: не хватает {v}" for k, v in missing.items())
         raise RuntimeError(
             "Не удалось собрать запрошенное количество изображений. "
-            f"{details}. Попробуйте --per-color 100."
+            f"{details}. В исходном датасете недостаточно примеров для одного или нескольких цветов."
         )
 
     rows: list[dict[str, str]] = []
