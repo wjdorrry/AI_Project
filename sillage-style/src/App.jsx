@@ -204,7 +204,7 @@ function MainApp() {
             {aiWarning && <div className="app-ai-warning">{aiWarning}</div>}
             {(aiPicked.color || aiPicked.style) && (
               <div className="app-ai-top">
-                <span className="app-ai-top-label">Выбрано ИИ{aiMode ? ` · ${aiMode === "trained_vit" ? "ViT" : "резервная модель"}` : ""}:</span>
+                <span className="app-ai-top-label">Выбрано ИИ{aiMode ? ` · ${aiMode === "hybrid_vit_fashionclip" ? "ViT + FashionCLIP" : aiMode === "trained_vit" ? "ViT" : "резервная модель"}` : ""}:</span>
                 <span className="app-ai-top-list">{[aiPicked.style, aiPicked.color].filter(Boolean).join(" · ")}</span>
               </div>
             )}
