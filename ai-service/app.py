@@ -14,18 +14,31 @@ from PIL import Image, UnidentifiedImageError
 from transformers import ViTImageProcessor, ViTModel
 
 from auth import get_current_user, init_db, router as auth_router
+from fashionclip_style import FashionClipStyleClassifier
 from lightweight_model import LightweightImageClassifier
 
 
 APP_NAME = "Sillage&Style AI"
 
 ROOT = Path(__file__).resolve().parent.parent
-RUN_DIR = ROOT / "ml" / "runs" / "latest"
-MODEL_PT = RUN_DIR / "model.pt"
-LABELS_JSON = RUN_DIR / "label_maps.json"
+
+# Финальная связка моделей:
+#   цвет  -> Week 6 ViT на 15 цветах;
+#   стиль -> Week 7 FashionCLIP + text/image prototypes.
+COLOR_RUN_DIR = ROOT / "ml" / "runs" / "week6_color_7500"
+COLOR_MODEL_PT = COLOR_RUN_DIR / "model.pt"
+
+STYLE_RUN_DIR = ROOT / "ml" / "runs" / "week7_fashionclip_dev72"
+STYLE_PROTOTYPES_NPZ = STYLE_RUN_DIR / "final_prototypes.npz"
+
+# Старый путь оставлен только как fallback для старых локальных копий.
+LEGACY_RUN_DIR = ROOT / "ml" / "runs" / "latest"
+LEGACY_MODEL_PT = LEGACY_RUN_DIR / "model.pt"
+LEGACY_LABELS_JSON = LEGACY_RUN_DIR / "label_maps.json"
 
 DEFAULT_VIT_ID = "google/vit-base-patch16-224"
 
+HYBRID_MODE = "hybrid_vit_fashionclip"
 TRAINED_MODE = "trained_vit"
 LIGHTWEIGHT_MODE = "lightweight"
 UNAVAILABLE_MODE = "unavailable"
@@ -33,7 +46,14 @@ UNAVAILABLE_MODE = "unavailable"
 CONFIDENCE_THRESHOLD = 0.55
 MARGIN_THRESHOLD = 0.10
 
-ALLOWED_COLORS = ["Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink", "Burgundy", "Purple", "Yellow", "Orange", "Navy", "Cream"]
+COLOR_LABELS = [
+    "Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink",
+    "Burgundy", "Purple", "Yellow", "Orange", "Navy", "Cream",
+]
+STYLE_LABELS = [
+    "Elegant", "Casual", "Romantic", "Minimalist", "Sporty",
+    "Streetwear", "Boho", "Office", "Evening",
+]
 STYLE_ALIASES = {"Sportswear": "Sporty"}
 
 
@@ -101,8 +121,8 @@ def _pixel_color_label(img: Image.Image) -> tuple[str, dict[str, float]]:
     else:
         best = "Grey"
 
-    rest = 0.01 / (len(ALLOWED_COLORS) - 1)
-    dist = {c: (0.99 if c == best else rest) for c in ALLOWED_COLORS}
+    rest = 0.01 / (len(COLOR_LABELS) - 1)
+    dist = {c: (0.99 if c == best else rest) for c in COLOR_LABELS}
     return best, dist
 
 
@@ -142,14 +162,50 @@ _processor: ViTImageProcessor | None = None
 _model: MultiHeadViT | None = None
 _color_labels: list[str] | None = None
 _style_labels: list[str] | None = None
+_style_classifier: FashionClipStyleClassifier | None = None
 _lightweight: LightweightImageClassifier | None = None
 _load_error: str | None = None
 
 
-def _load_trained() -> None:
+def _load_week6_color() -> None:
+    global _vit_id, _processor, _model, _color_labels, _style_labels
+
+    _vit_id = DEFAULT_VIT_ID
+    _color_labels = list(COLOR_LABELS)
+    _style_labels = list(STYLE_LABELS)
+
+    _processor = ViTImageProcessor.from_pretrained(_vit_id)
+    model = MultiHeadViT(
+        _vit_id,
+        num_colors=len(_color_labels),
+        num_styles=len(_style_labels),
+    )
+
+    checkpoint = torch.load(
+        COLOR_MODEL_PT,
+        map_location="cpu",
+        weights_only=False,
+    )
+    state = checkpoint.get("model", checkpoint)
+    model.load_state_dict(state, strict=True)
+    model.eval()
+
+    _model = model
+
+
+def _load_final_style() -> None:
+    global _style_classifier
+
+    _style_classifier = FashionClipStyleClassifier(
+        STYLE_PROTOTYPES_NPZ,
+        device=("cuda" if torch.cuda.is_available() else "cpu"),
+    )
+
+
+def _load_legacy_trained() -> None:
     global _mode, _vit_id, _processor, _model, _color_labels, _style_labels
 
-    meta = json.loads(LABELS_JSON.read_text(encoding="utf-8"))
+    meta = json.loads(LEGACY_LABELS_JSON.read_text(encoding="utf-8"))
     _vit_id = str(meta.get("vit_id") or DEFAULT_VIT_ID)
     _color_labels = list(meta["color_labels"])
     _style_labels = list(meta["style_labels"])
@@ -160,8 +216,9 @@ def _load_trained() -> None:
         num_colors=len(_color_labels),
         num_styles=len(_style_labels),
     )
-    state = torch.load(MODEL_PT, map_location="cpu")
-    model.load_state_dict(state["model"], strict=True)
+    state = torch.load(LEGACY_MODEL_PT, map_location="cpu", weights_only=False)
+    state = state.get("model", state)
+    model.load_state_dict(state, strict=True)
     model.eval()
 
     _model = model
@@ -174,15 +231,29 @@ def _ensure_mode() -> None:
     if _mode is not None:
         return
 
-    if MODEL_PT.exists() and LABELS_JSON.exists():
+    # Основной финальный режим проекта.
+    if COLOR_MODEL_PT.exists() and STYLE_PROTOTYPES_NPZ.exists():
         try:
-            _load_trained()
+            _load_week6_color()
+            _load_final_style()
+            _mode = HYBRID_MODE
             return
         except Exception as exc:
-            _load_error = f"{type(exc).__name__}: {exc}"
+            _load_error = f"Hybrid load failed: {type(exc).__name__}: {exc}"
 
-    # model.pt intentionally is not stored in Git because the ViT checkpoint is large.
-    # The local dataset therefore becomes the automatic fallback.
+    # Старый ViT оставляем только как fallback.
+    if LEGACY_MODEL_PT.exists() and LEGACY_LABELS_JSON.exists():
+        try:
+            _load_legacy_trained()
+            return
+        except Exception as exc:
+            legacy_error = f"Legacy load failed: {type(exc).__name__}: {exc}"
+            _load_error = (
+                f"{_load_error}; {legacy_error}"
+                if _load_error
+                else legacy_error
+            )
+
     labels_csv = ROOT / "dataset" / "labels_clean.csv"
     images_dir = ROOT / "dataset" / "images"
     if labels_csv.exists() and images_dir.exists():
@@ -257,17 +328,35 @@ def health() -> dict[str, Any]:
             "validation": _lightweight.validation,
         }
 
+    style_info: dict[str, Any] | None = None
+    if _style_classifier is not None:
+        style_info = {
+            "model_id": _style_classifier.model.model_type
+            if hasattr(_style_classifier.model, "model_type")
+            else "patrickjohncyh/fashion-clip",
+            "prototype_path": str(STYLE_PROTOTYPES_NPZ),
+            "alpha_text": _style_classifier.alpha_text,
+            "alpha_image": _style_classifier.alpha_image,
+            "device": str(_style_classifier.device),
+            "final_holdout_accuracy": 0.889,
+            "final_holdout_macro_f1": 0.886,
+        }
+
     return {
         "ok": _mode != UNAVAILABLE_MODE,
         "name": APP_NAME,
         "mode": _mode,
-        "trained_weights_found": MODEL_PT.exists(),
-        "model_path": str(MODEL_PT) if MODEL_PT.exists() else None,
-        "labels_path": str(LABELS_JSON) if LABELS_JSON.exists() else None,
+        "color_model_path": str(COLOR_MODEL_PT) if COLOR_MODEL_PT.exists() else None,
+        "style_prototypes_path": (
+            str(STYLE_PROTOTYPES_NPZ)
+            if STYLE_PROTOTYPES_NPZ.exists()
+            else None
+        ),
         "vit_id": _vit_id,
         "confidence_threshold": CONFIDENCE_THRESHOLD,
         "margin_threshold": MARGIN_THRESHOLD,
         "load_error": _load_error,
+        "style_model": style_info,
         "lightweight": lightweight_info,
     }
 
@@ -290,19 +379,40 @@ async def analyze(
 
     pixel_best, _pixel_dist = _pixel_color_label(img)
 
-    if _mode == TRAINED_MODE:
+    if _mode == HYBRID_MODE:
+        assert _processor is not None and _model is not None
+        assert _color_labels is not None and _style_classifier is not None
+
+        inputs = _processor(images=img, return_tensors="pt")
+        with torch.inference_mode():
+            out = _model(pixel_values=inputs["pixel_values"])
+            color_prob = out["logits_color"][0].softmax(dim=0).cpu().tolist()
+
+        style_pred = _style_classifier.predict(img)
+
+        color_labels = _color_labels
+        style_labels = style_pred["labels"]
+        style_prob = style_pred["probabilities"]
+        note = (
+            "Цвет: Week 6 multi-task ViT на 15 цветах. "
+            "Стиль: финальный Week 7 FashionCLIP "
+            f"(text={style_pred['alpha_text']:.2f}, "
+            f"real-image={style_pred['alpha_image']:.2f})."
+        )
+
+    elif _mode == TRAINED_MODE:
         assert _processor is not None and _model is not None
         assert _color_labels is not None and _style_labels is not None
 
         inputs = _processor(images=img, return_tensors="pt")
-        with torch.no_grad():
+        with torch.inference_mode():
             out = _model(pixel_values=inputs["pixel_values"])
             color_prob = out["logits_color"][0].softmax(dim=0).cpu().tolist()
             style_prob = out["logits_style"][0].softmax(dim=0).cpu().tolist()
 
         color_labels = _color_labels
         style_labels = [STYLE_ALIASES.get(x, x) for x in _style_labels]
-        note = "Результат получен обученной multi-task ViT-моделью."
+        note = "Использован старый ViT fallback."
 
     elif _mode == LIGHTWEIGHT_MODE:
         fallback = _ensure_lightweight()
@@ -313,16 +423,16 @@ async def analyze(
         style_labels = pred.style_labels
         style_prob = pred.style_probabilities.tolist()
         note = (
-            "Большой checkpoint ViT model.pt отсутствует в локальной копии. "
-            "Использована резервная модель, обученная на dataset/labels_clean.csv и dataset/images."
+            "Финальные checkpoint/prototypes недоступны. "
+            "Использована резервная локальная модель."
         )
 
     else:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=(
-                "AI-модель недоступна: нет model.pt и не найден локальный датасет "
-                "для резервного классификатора."
+                "AI-модель недоступна: не найдены финальные локальные модели "
+                "и нет датасета для резервного классификатора."
             ),
         )
 
@@ -348,6 +458,15 @@ async def analyze(
         "note": note,
         "debug": {"pixel_color": pixel_best},
     }
+
+    if _mode == HYBRID_MODE and _style_classifier is not None:
+        response["style_model"] = {
+            "name": "FashionCLIP",
+            "alpha_text": _style_classifier.alpha_text,
+            "alpha_image": _style_classifier.alpha_image,
+            "final_holdout_accuracy": 0.889,
+            "final_holdout_macro_f1": 0.886,
+        }
 
     if _mode == LIGHTWEIGHT_MODE and _lightweight is not None:
         response["validation"] = _lightweight.validation
