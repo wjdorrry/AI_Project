@@ -107,7 +107,12 @@ def extract_embeddings(name, rows, processor, model, device):
     with torch.no_grad():
         for batch in tqdm(loader, desc=f"embeddings {name}"):
             pixels = batch["pixel_values"].to(device)
-            feats = model.get_image_features(pixel_values=pixels)
+            # transformers 5.x returns a model-output object from get_image_features().
+            # Use the vision encoder + CLIP projection explicitly so we always get
+            # the projected image embedding tensor used by CLIP.
+            vision_outputs = model.vision_model(pixel_values=pixels)
+            pooled = vision_outputs.pooler_output
+            feats = model.visual_projection(pooled)
             feats = feats / feats.norm(dim=-1, keepdim=True)
             xs.append(feats.float().cpu().numpy())
             ys.append(batch["label"].cpu().numpy())
