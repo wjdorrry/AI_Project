@@ -43,8 +43,11 @@ TRAINED_MODE = "trained_vit"
 LIGHTWEIGHT_MODE = "lightweight"
 UNAVAILABLE_MODE = "unavailable"
 
-CONFIDENCE_THRESHOLD = 0.55
-MARGIN_THRESHOLD = 0.10
+COLOR_CONFIDENCE_THRESHOLD = 0.30
+COLOR_MARGIN_THRESHOLD = 0.08
+
+STYLE_CONFIDENCE_THRESHOLD = 0.20
+STYLE_MARGIN_THRESHOLD = 0.03
 
 COLOR_LABELS = [
     "Black", "White", "Grey", "Beige", "Blue", "Brown", "Green", "Red", "Pink",
@@ -278,7 +281,13 @@ def _ensure_lightweight() -> LightweightImageClassifier:
     return _lightweight
 
 
-def _summary(labels: Sequence[str], probabilities: Sequence[float]) -> dict[str, Any]:
+def _summary(
+    labels: Sequence[str],
+    probabilities: Sequence[float],
+    *,
+    confidence_threshold: float,
+    margin_threshold: float,
+) -> dict[str, Any]:
     ranked = sorted(
         [(str(label), float(prob)) for label, prob in zip(labels, probabilities)],
         key=lambda x: x[1],
@@ -295,7 +304,9 @@ def _summary(labels: Sequence[str], probabilities: Sequence[float]) -> dict[str,
         "second_label": second_label,
         "second_confidence": second_conf,
         "margin": margin,
-        "low_confidence": best_conf < CONFIDENCE_THRESHOLD or margin < MARGIN_THRESHOLD,
+        "low_confidence": best_conf < confidence_threshold or margin < margin_threshold,
+        "confidence_threshold": confidence_threshold,
+        "margin_threshold": margin_threshold,
     }
 
 
@@ -353,8 +364,16 @@ def health() -> dict[str, Any]:
             else None
         ),
         "vit_id": _vit_id,
-        "confidence_threshold": CONFIDENCE_THRESHOLD,
-        "margin_threshold": MARGIN_THRESHOLD,
+        "thresholds": {
+            "color": {
+                "confidence": COLOR_CONFIDENCE_THRESHOLD,
+                "margin": COLOR_MARGIN_THRESHOLD,
+            },
+            "style": {
+                "confidence": STYLE_CONFIDENCE_THRESHOLD,
+                "margin": STYLE_MARGIN_THRESHOLD,
+            },
+        },
         "load_error": _load_error,
         "style_model": style_info,
         "lightweight": lightweight_info,
@@ -436,8 +455,18 @@ async def analyze(
             ),
         )
 
-    color_summary = _summary(color_labels, color_prob)
-    style_summary = _summary(style_labels, style_prob)
+    color_summary = _summary(
+        color_labels,
+        color_prob,
+        confidence_threshold=COLOR_CONFIDENCE_THRESHOLD,
+        margin_threshold=COLOR_MARGIN_THRESHOLD,
+    )
+    style_summary = _summary(
+        style_labels,
+        style_prob,
+        confidence_threshold=STYLE_CONFIDENCE_THRESHOLD,
+        margin_threshold=STYLE_MARGIN_THRESHOLD,
+    )
     items = _items(color_labels, color_prob, style_labels, style_prob)
 
     low_confidence = bool(
@@ -453,8 +482,16 @@ async def analyze(
             "style": style_summary,
             "low_confidence": low_confidence,
         },
-        "confidence_threshold": CONFIDENCE_THRESHOLD,
-        "margin_threshold": MARGIN_THRESHOLD,
+        "thresholds": {
+            "color": {
+                "confidence": COLOR_CONFIDENCE_THRESHOLD,
+                "margin": COLOR_MARGIN_THRESHOLD,
+            },
+            "style": {
+                "confidence": STYLE_CONFIDENCE_THRESHOLD,
+                "margin": STYLE_MARGIN_THRESHOLD,
+            },
+        },
         "note": note,
         "debug": {"pixel_color": pixel_best},
     }
