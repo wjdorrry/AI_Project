@@ -47,7 +47,7 @@ export default function ImageUploader({ files, onChange }) {
         <h2 id="iu-title" className="iu-title">
           Образ
         </h2>
-        <p className="iu-sub">До {MAX} фото — превью только в браузере, на сервер ничего не уходит.</p>
+        <p className="iu-sub">До {MAX} фото. Превью остаётся в браузере; для ИИ-анализа первое фото передаётся локальному AI-сервису.</p>
       </div>
 
       <div
