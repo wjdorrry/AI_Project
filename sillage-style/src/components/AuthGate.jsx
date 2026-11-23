@@ -114,12 +114,16 @@ export default function AuthGate({ children }) {
   return (
     <>
       <div className="account-bar">
-        <div>
-          <span className="account-label">Личный кабинет</span>
-          <strong>{user.display_name}</strong>
-          <span className="account-email">{user.email}</span>
+        <div className="account-user">
+          <div className="account-avatar" aria-hidden>
+            {(user.display_name || user.email || "S").trim().charAt(0).toUpperCase()}
+          </div>
+          <div className="account-copy">
+            <strong className="account-name">{user.display_name}</strong>
+            <span className="account-email">{user.email}</span>
+          </div>
         </div>
-        <button type="button" onClick={logout}>Выйти</button>
+        <button className="account-logout" type="button" onClick={logout}>Выйти</button>
       </div>
       {children({ user })}
     </>
