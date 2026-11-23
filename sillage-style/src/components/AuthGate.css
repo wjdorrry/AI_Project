@@ -130,41 +130,102 @@
 
 .account-bar {
   max-width: 1120px;
-  margin: 1rem auto 0;
-  padding: 0.8rem 1.1rem;
+  margin: 1.25rem auto 0;
+  padding: 0.85rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  border: 1px solid var(--stroke);
-  border-radius: 14px;
-  background: rgba(28, 24, 20, 0.72);
+  border: 1px solid rgba(201, 169, 98, 0.18);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(38, 32, 26, 0.82), rgba(24, 21, 18, 0.88));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(14px);
 }
 
-.account-bar > div {
+.account-user {
+  min-width: 0;
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.8rem;
+  align-items: center;
+  gap: 0.85rem;
 }
 
-.account-label {
-  color: var(--gold);
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.account-avatar {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(201, 169, 98, 0.38);
+  border-radius: 50%;
+  color: var(--bg-deep);
+  background: linear-gradient(145deg, #d7b86c, #a9853d);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(201, 169, 98, 0.12);
+}
+
+.account-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.12rem;
+}
+
+.account-name {
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--cream);
 }
 
 .account-email {
+  overflow: hidden;
+  max-width: min(58vw, 420px);
   color: var(--cream-muted);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.account-bar button {
-  border: 1px solid var(--stroke);
+.account-logout {
+  flex: 0 0 auto;
+  padding: 0.62rem 0.9rem;
+  border: 1px solid rgba(201, 169, 98, 0.22);
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--cream-muted);
+  background: rgba(255, 255, 255, 0.025);
+  transition: color 0.15s, border-color 0.15s, background 0.15s, transform 0.15s;
 }
 
-.account-bar button:hover {
+.account-logout:hover {
   color: var(--cream);
-  border-color: var(--gold-dim);
+  border-color: rgba(201, 169, 98, 0.48);
+  background: rgba(201, 169, 98, 0.06);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 560px) {
+  .account-bar {
+    margin: 0.8rem 0.8rem 0;
+    border-radius: 14px;
+  }
+
+  .account-avatar {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .account-email {
+    max-width: 48vw;
+  }
+
+  .account-logout {
+    padding: 0.55rem 0.72rem;
+    font-size: 0.78rem;
+  }
 }
