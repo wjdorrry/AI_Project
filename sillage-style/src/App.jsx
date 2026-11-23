@@ -253,9 +253,6 @@ function MainApp() {
         </div>
       </main>
 
-      <footer className="app-foot">
-        <span>Учебный проект · персональный кабинет Sillage&amp;Style</span>
-      </footer>
     </div>
   );
 }
